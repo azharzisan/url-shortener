@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 const fs = require("fs");
 const path = require("path");
-const {nanoid} = require("nanoid")
+const {nanoid} = require("nanoid");
+const { json } = require("stream/consumers");
 
 const shortUrlExt = nanoid(10);
 
@@ -13,9 +14,10 @@ app.post("/shorten", (req, res) => {
 
     const UrlsData = {
         baseUrl : url,
-        shortUrl : shortUrlExt
+        redirectingUrl : `http://locahost:3000/${shortUrlExt}`
     }
     res.json(UrlsData)
+    fs.writeFileSync(path.join(__dirname, "data", "urls.json"), JSON.stringify(UrlsData))
 })
 
 app.listen(3000, () => {
