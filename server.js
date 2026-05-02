@@ -1,49 +1,44 @@
-const express = require("express");
-const app = express();
-const fs = require("fs");
-const path = require("path");
-const {nanoid} = require("nanoid");
-const { ADDRCONFIG } = require("dns");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const {nanoid} = require('nanoid');
+const { json } = require('stream/consumers');
+const app = express()
 
 app.use(express.json())
 
-app.post("/shorten", (req, res) => {
-    const shortUrlExt = nanoid(10);
-    const {url} = req.body;
+app.post('/shorten', (req, res) => {
+    const { url } = req.body
+    const shortUrl = nanoid(10)
 
-    const urlsData = {
+    const existingUrl = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8")) || []
+    const urlData = {
         id: crypto.randomUUID(),
         baseUrl : url,
-        redirectingUrl : `http://localhost:3000/${shortUrlExt}`
+        shortUrl : shortUrl
     }
-    const existingRaw = fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8")
-    const existingData = JSON.parse(existingRaw) ?? []
-
-    const updated = [...existingData, urlsData]
+    const updated = [...existingUrl, urlData]
     fs.writeFileSync(path.join(__dirname, "data", "urls.json"), JSON.stringify(updated, null, 2))
 
-    res.json(urlsData)
+    res.json(urlData)
 })
 
-const originalUrl = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8"))
-
 app.get('/all', (req, res) => {
-    const data = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8"),
-    );
-    if(!data) return res.status(404).json({message: 'data not found'})
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8")) || []
     res.json(data)
 })
 
-app.get(`/:code`, (req, res) => {
+app.get('/:code', (req, res) => {
     const {code} = req.params
-    const target = originalUrl.find((i) => i.redirectingUrl === `http://localhost:3000/${code}`)
-    
-    if(!target) return res.status(404).json({message: 'url not found'})
 
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8")) || []
+    const target = data.find((i) => i.shortUrl === code)
+
+    if(!target) return res.status(404).json({message: "url not found"})
+    
     res.redirect(target.baseUrl)    
-});
+})
 
 app.listen(3000, () => {
-    console.log("http://localhost:3000")
+    console.log('http://localhost:3000')
 })
