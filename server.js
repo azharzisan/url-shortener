@@ -3,6 +3,7 @@ const app = express();
 const fs = require("fs");
 const path = require("path");
 const {nanoid} = require("nanoid");
+const { ADDRCONFIG } = require("dns");
 
 app.use(express.json())
 
@@ -13,7 +14,7 @@ app.post("/shorten", (req, res) => {
     const urlsData = {
         id: crypto.randomUUID(),
         baseUrl : url,
-        redirectingUrl : `http://locahost:3000/${shortUrlExt}`
+        redirectingUrl : `http://localhost:3000/${shortUrlExt}`
     }
     const existingRaw = fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8")
     const existingData = JSON.parse(existingRaw) ?? []
@@ -26,10 +27,20 @@ app.post("/shorten", (req, res) => {
 
 const originalUrl = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8"))
 
-app.get(`/4TahDyL7tb`, (req, res) => {
-    const originalx = originalUrl.filter(
-      (i) => i.redirectingUrl === `http://locahost:3000/4TahDyL7tb` ? i.baseUrl : i);
-    res.redirect(originalx)
+app.get('/all', (req, res) => {
+    const data = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8"),
+    );
+    res.json(data)
+})
+
+app.get(`/:code`, (req, res) => {
+    const {code} = req.params
+    const target = originalUrl.find((i) => i.redirectingUrl === `http://localhost:3000/${code}`)
+    
+    if(!target) return res.status(404).json({message: 'url not found'})
+
+    res.redirect(target.baseUrl)    
 });
 
 app.listen(3000, () => {
