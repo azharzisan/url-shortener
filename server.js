@@ -2,7 +2,6 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const {nanoid} = require('nanoid');
-const { json } = require('stream/consumers');
 const app = express()
 
 app.use(express.json())
