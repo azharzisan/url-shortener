@@ -31,6 +31,7 @@ app.get('/all', (req, res) => {
     const data = JSON.parse(
       fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8"),
     );
+    if(!data) return res.status(404).json({message: 'data not found'})
     res.json(data)
 })
 
