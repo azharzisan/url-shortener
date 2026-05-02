@@ -3,8 +3,6 @@ const app = express();
 const fs = require("fs");
 const path = require("path");
 const {nanoid} = require("nanoid");
-const { ChildProcess } = require("child_process");
-
 
 app.use(express.json())
 
@@ -25,6 +23,14 @@ app.post("/shorten", (req, res) => {
 
     res.json(urlsData)
 })
+
+const originalUrl = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "urls.json"), "utf-8"))
+
+app.get(`/4TahDyL7tb`, (req, res) => {
+    const originalx = originalUrl.filter(
+      (i) => i.redirectingUrl === `http://locahost:3000/4TahDyL7tb` ? i.baseUrl : i);
+    res.redirect(originalx)
+});
 
 app.listen(3000, () => {
     console.log("http://localhost:3000")
